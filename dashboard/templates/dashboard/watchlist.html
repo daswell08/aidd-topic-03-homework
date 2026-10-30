@@ -1,0 +1,38 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}<title>Наблюдение</title>{% endblock %}
+
+{% block content %}
+    <h1>Список наблюдения</h1>
+    {% if items %}
+        <table class="table table-striped">
+            <thead><tr><th>Тикер</th><th>Акция</th><th>Цена</th><th></th></tr></thead>
+            <tbody>
+            {% for item in items %}
+                <tr>
+                    <td><a href="{% url 'dashboard:detail' item.share.pk %}">{{ item.share.ticker }}</a></td>
+                    <td>{{ item.share.name }}</td>
+                    <td>{{ item.share.last_price|default:"—" }} {{ item.share.currency }}</td>
+                    <td>
+                        <form method="post" action="{% url 'dashboard:watchlist-remove' item.pk %}">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-outline-danger" type="submit">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>В списке пока нет акций.</p>
+    {% endif %}
+    <h2>Непрочитанные уведомления</h2>
+    {% for notification in notifications %}
+        <p>
+            {{ notification.alert.share.ticker }}: цена {{ notification.price }},
+            порог {{ notification.alert.target_price }} ({{ notification.recorded_at }})
+        </p>
+    {% empty %}
+        <p>Новых уведомлений нет.</p>
+    {% endfor %}
+{% endblock %}

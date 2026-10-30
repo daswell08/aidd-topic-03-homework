@@ -1,0 +1,19 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}<title>Виртуальные портфели</title>{% endblock %}
+
+{% block content %}
+    <h1>Виртуальные портфели</h1>
+    <form method="post" class="mb-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-primary" type="submit">Создать портфель</button>
+    </form>
+    <ul>
+        {% for portfolio in portfolios %}
+            <li><a href="{% url 'dashboard:portfolio-detail' portfolio.pk %}">{{ portfolio.name }}</a></li>
+        {% empty %}
+            <li>Портфелей пока нет.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

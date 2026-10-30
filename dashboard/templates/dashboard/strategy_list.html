@@ -1,0 +1,38 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}<title>Симулятор стратегий</title>{% endblock %}
+
+{% block content %}
+    <h1>Симулятор стратегий</h1>
+    <p>Стратегии выполняют виртуальную покупку ниже заданного уровня и продажу выше уровня продажи.</p>
+    <form method="post" class="mb-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-primary" type="submit">Создать стратегию</button>
+    </form>
+    <table class="table table-striped">
+        <thead><tr><th>Название</th><th>Акция</th><th>Покупка до</th><th>Продажа от</th><th>Позиция</th><th>Статус</th><th></th></tr></thead>
+        <tbody>
+        {% for strategy in strategies %}
+            <tr>
+                <td><a href="{% url 'dashboard:strategy-detail' strategy.pk %}">{{ strategy.name }}</a></td>
+                <td>{{ strategy.share.ticker }}</td>
+                <td>{{ strategy.buy_below }}</td>
+                <td>{{ strategy.sell_above }}</td>
+                <td>{{ strategy.position_quantity }}</td>
+                <td>{% if strategy.is_active %}Активна{% else %}Остановлена{% endif %}</td>
+                <td>
+                    <form method="post" action="{% url 'dashboard:strategy-toggle' strategy.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-secondary" type="submit">
+                            {% if strategy.is_active %}Остановить{% else %}Запустить{% endif %}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="7">Стратегий пока нет.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

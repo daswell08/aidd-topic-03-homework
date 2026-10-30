@@ -1,0 +1,61 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}<title>{{ portfolio.name }}</title>{% endblock %}
+
+{% block content %}
+    <h1>{{ portfolio.name }}</h1>
+    <h2>Записать виртуальную операцию</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-primary" type="submit">Записать</button>
+    </form>
+
+    <h2 class="mt-4">Позиции и прибыль/убыток</h2>
+    <p>
+        Текущая стоимость: {{ current_value }} |
+        Реализованный P/L: {{ realized_profit }} |
+        Нереализованный P/L: {{ unrealized_profit }} |
+        Общий P/L: {{ total_profit }}
+        {% if unpriced_positions %}
+            (оценка неполная: нет текущей цены для {{ unpriced_positions }} поз.)
+        {% endif %}
+    </p>
+    <table class="table table-striped">
+        <thead><tr><th>Акция</th><th>Количество</th><th>Средняя цена</th><th>Стоимость</th><th>Реализованный P/L</th><th>Нереализованный P/L</th></tr></thead>
+        <tbody>
+        {% for position in positions %}
+            {% if position.quantity %}
+                <tr>
+                    <td>{{ position.share.ticker }}</td>
+                    <td>{{ position.quantity }}</td>
+                    <td>{{ position.average_cost }}</td>
+                    <td>{% if position.current_value is not None %}{{ position.current_value }}{% else %}—{% endif %}</td>
+                    <td>{{ position.realized_profit }}</td>
+                    <td>{% if position.unrealized_profit is not None %}{{ position.unrealized_profit }}{% else %}—{% endif %}</td>
+                </tr>
+            {% endif %}
+        {% empty %}
+            <tr><td colspan="6">Позиции появятся после первой покупки.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Журнал операций</h2>
+    <table class="table table-striped">
+        <thead><tr><th>Время</th><th>Акция</th><th>Операция</th><th>Количество</th><th>Цена</th></tr></thead>
+        <tbody>
+        {% for item in transactions %}
+            <tr>
+                <td>{{ item.created_at }}</td>
+                <td>{{ item.share.ticker }}</td>
+                <td>{{ item.get_side_display }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.price }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5">Операций пока нет.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

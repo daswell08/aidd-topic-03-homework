@@ -1,6 +1,4 @@
 from django import forms
-from django.contrib.auth import authenticate
-from django.core.exceptions import ValidationError
 
 from user.models import User
 
@@ -27,30 +25,30 @@ class RegistrationForm(forms.Form):
         ),
     )
 
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError(
+                "Этот email уже зарегистрирован. Выполните вход в аккаунт."
+            )
+        return email
+
     def clean(self):
-        super().clean()
-        email = self.cleaned_data["email"]
-        password1 = self.cleaned_data["password1"]
-        password2 = self.cleaned_data["password2"]
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get("password1")
+        password2 = cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
-            errors = ["Введенные пароли не совпадают"]
-            raise ValidationError(errors)
-
-        user = User.objects.filter(email=email)
-
-        if user:
-            errors = [
-                "Данный e-mail уже зарегистрирован! Введите другой e-mail или"
-                " воспользуйтесь формой авторизации."
-            ]
-            raise ValidationError(errors)
+            self.add_error("password2", "Пароли не совпадают.")
+        return cleaned_data
 
     def save(self):
         email = self.cleaned_data["email"]
         password = self.cleaned_data["password1"]
-        User.objects.create_user(email, email, password)
-        user = authenticate(username=email, password=password)
-        return user
+        return User.objects.create_user(
+            username=email,
+            email=email,
+            password=password,
+        )
 
 
 class AuthForm(forms.Form):

@@ -4,6 +4,7 @@ __pycache__/
 
 # Environments and IDE
 .venv/
+.venv*/
 venv/
 .idea/
 .vscode/

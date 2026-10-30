@@ -1,0 +1,32 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}<title>Уведомления</title>{% endblock %}
+
+{% block content %}
+    <h1>Ценовые уведомления</h1>
+    <table class="table table-striped">
+        <thead><tr><th>Акция</th><th>Порог</th><th>Цена</th><th>Сработало</th><th>Статус</th></tr></thead>
+        <tbody>
+        {% for notification in notifications %}
+            <tr>
+                <td>{{ notification.alert.share.ticker }}</td>
+                <td>{{ notification.alert.get_direction_display }} {{ notification.alert.target_price }}</td>
+                <td>{{ notification.price }}</td>
+                <td>{{ notification.recorded_at }}</td>
+                <td>
+                    {% if notification.read_at %}
+                        Прочитано
+                    {% else %}
+                        <form method="post" action="{% url 'dashboard:notification-read' notification.pk %}">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-outline-primary" type="submit">Отметить прочитанным</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5">Уведомлений пока нет.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

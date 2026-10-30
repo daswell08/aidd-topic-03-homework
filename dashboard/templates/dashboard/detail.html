@@ -11,6 +11,42 @@
         Инструмент: {{ share.name }} <br>
         Текущая цена: {{ share.last_price }} {{ share.currency }} <br>
         Время последнего обновления: {{ share.updated_at }}
+        {% if user.is_authenticated %}
+            <div class="mt-3">
+                {% if watchlist_item %}
+                    <form method="post" action="{% url 'dashboard:watchlist-remove' watchlist_item.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-secondary" type="submit">Убрать из наблюдения</button>
+                    </form>
+                {% else %}
+                    <form method="post" action="{% url 'dashboard:watchlist-add' share.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-primary" type="submit">Добавить в наблюдение</button>
+                    </form>
+                {% endif %}
+            </div>
+            <form method="post" action="{% url 'dashboard:alert-create' share.pk %}" class="mt-3">
+                {% csrf_token %}
+                {{ alert_form.as_p }}
+                <button class="btn btn-primary" type="submit">Создать ценовое уведомление</button>
+            </form>
+            {% if user_alerts %}
+                <h6 class="mt-3">Мои уведомления</h6>
+                <ul>
+                    {% for alert in user_alerts %}
+                        <li>
+                            {{ alert.get_direction_display }} {{ alert.target_price }} {{ share.currency }}
+                            <form method="post" action="{% url 'dashboard:alert-toggle' alert.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-secondary" type="submit">
+                                    {% if alert.is_active %}Отключить{% else %}Включить{% endif %}
+                                </button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endif %}
     </div>
     <div class="col3"></div>
     </div>
@@ -19,10 +55,39 @@
       <div class="row mt-3">
     <div class="col3"></div>
     <div class="col3">
-    <h5>Исторические данные: </h5>
- {% autoescape off %}
-  {{ plot_div }}
-  {% endautoescape %}
+        <h5>Исторические данные за период:</h5>
+        <div class="btn-group mb-3" role="group" aria-label="Период истории цен">
+            {% for days in periods %}
+                <a href="?days={{ days }}"
+                   class="btn btn-outline-primary{% if selected_days == days %} active{% endif %}">
+                    {{ days }} дн.
+                </a>
+            {% endfor %}
+        </div>
+
+        <p>
+            Изменение за период:
+            {% if absolute_change is not None %}
+                {{ absolute_change }} {{ share.currency }}
+                {% if percentage_change is not None %}
+                    ({{ percentage_change }}%)
+                {% else %}
+                    (процентное изменение не рассчитывается при нулевой начальной цене)
+                {% endif %}
+            {% else %}
+                нет сохранённых точек для расчёта
+            {% endif %}
+        </p>
+
+        {% if price_history %}
+            <p>На графике показаны сохранённые в приложении цены.</p>
+        {% else %}
+            <p>Сохранённая история за этот период пока отсутствует; показаны дневные данные API.</p>
+        {% endif %}
+
+        {% autoescape off %}
+            {{ plot_div }}
+        {% endautoescape %}
     </div>
     <div class="col3"></div>
     </div>

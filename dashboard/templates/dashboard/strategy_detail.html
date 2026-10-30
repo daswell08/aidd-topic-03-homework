@@ -1,0 +1,29 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}<title>{{ strategy.name }}</title>{% endblock %}
+
+{% block content %}
+    <h1>{{ strategy.name }} — {{ strategy.share.ticker }}</h1>
+    <p>Статус: {% if strategy.is_active %}активна{% else %}остановлена{% endif %}</p>
+    <p>Позиция: {{ strategy.position_quantity }} по средней цене {{ strategy.average_entry_price }}</p>
+    <p>Реализованный P/L: {{ strategy.realized_profit }}; нереализованный P/L:
+        {% if unrealized_profit is not None %}{{ unrealized_profit }}{% else %}— (нет текущей цены){% endif %}
+    </p>
+    <h2>Журнал симулированных сделок</h2>
+    <table class="table table-striped">
+        <thead><tr><th>Время</th><th>Сторона</th><th>Количество</th><th>Цена</th><th>Реализованный P/L</th></tr></thead>
+        <tbody>
+        {% for trade in trades %}
+            <tr>
+                <td>{{ trade.recorded_at }}</td>
+                <td>{{ trade.get_side_display }}</td>
+                <td>{{ trade.quantity }}</td>
+                <td>{{ trade.price }}</td>
+                <td>{{ trade.realized_profit }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5">Сделок пока нет.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
