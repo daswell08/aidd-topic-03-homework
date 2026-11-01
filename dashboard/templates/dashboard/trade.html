@@ -1,0 +1,20 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}
+<title>Сделка</title>
+{% endblock %}
+
+{% block content %}
+{% load crispy_forms_tags %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h3>Покупка / продажа</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button class="w-100 btn btn-lg btn-primary mt-4" type="submit">Исполнить</button>
+        </form>
+        <p class="mt-3"><a href="{% url 'dashboard:portfolio' %}">К портфелю</a></p>
+    </div>
+</div>
+{% endblock %}

@@ -28,3 +28,4 @@ celeryd.pid
 *.log
 .pytest_cache/
 app.logs
+.venv311/

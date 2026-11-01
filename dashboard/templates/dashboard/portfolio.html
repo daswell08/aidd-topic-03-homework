@@ -1,0 +1,77 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}
+<title>Виртуальный портфель</title>
+{% endblock %}
+
+{% block content %}
+    <h3>Виртуальный портфель</h3>
+    <p>
+        <a href="{% url 'dashboard:trade' %}" class="btn btn-primary">Новая сделка</a>
+    </p>
+
+    <div class="mb-4">
+        <p>Стоимость портфеля: <strong>{{ summary.total_value }}</strong></p>
+        <p>Сумма вложений: {{ summary.total_cost }}</p>
+        <p>Нереализованный P/L: {{ summary.total_pnl }} ({{ summary.total_pnl_percent }}%)</p>
+    </div>
+
+    {% if summary.rows %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Тикер</th>
+                <th>Количество</th>
+                <th>Средняя цена</th>
+                <th>Текущая цена</th>
+                <th>Стоимость</th>
+                <th>P/L</th>
+                <th>P/L %</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in summary.rows %}
+                <tr>
+                    <td><a href="{% url 'dashboard:detail' row.position.share.id %}">{{ row.position.share.ticker }}</a></td>
+                    <td>{{ row.position.quantity }}</td>
+                    <td>{{ row.position.average_price }}</td>
+                    <td>{{ row.position.share.last_price }} {{ row.position.share.currency }}</td>
+                    <td>{{ row.market_value }}</td>
+                    <td>{{ row.pnl }}</td>
+                    <td>{{ row.pnl_percent }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>В портфеле пока нет позиций.</p>
+    {% endif %}
+
+    <h4 class="mt-4">История операций</h4>
+    {% if transactions %}
+        <table class="table table-sm">
+            <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Операция</th>
+                <th>Тикер</th>
+                <th>Количество</th>
+                <th>Цена</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for tx in transactions %}
+                <tr>
+                    <td>{{ tx.created_at }}</td>
+                    <td>{{ tx.get_side_display }}</td>
+                    <td>{{ tx.share.ticker }}</td>
+                    <td>{{ tx.quantity }}</td>
+                    <td>{{ tx.price }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Операций ещё не было.</p>
+    {% endif %}
+{% endblock %}

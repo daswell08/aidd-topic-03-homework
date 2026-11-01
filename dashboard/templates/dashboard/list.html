@@ -7,8 +7,9 @@
 {% block content %}
 
     {% if user.is_authenticated %}
-        <div>
+        <div class="mb-3">
             <a href="{% url 'dashboard:create' %}" class="btn btn-primary">Добавить</a>
+            <a href="{% url 'dashboard:trade' %}" class="btn btn-outline-primary">Сделка</a>
         </div>
     {% endif %}
 
@@ -32,27 +33,28 @@
                     <td><a href="{% url 'dashboard:detail' share.id %}"> {{share.ticker}} </a></td>
                     <td>{{share.name}}</td>
                     <td>{{share.isin}}</td>
-                    {%  if  share.is_trend_high %}
-                        <td style="background-color: mediumseagreen">
-                            {%  else  %}
-                        <td style="background-color: palevioletred">
+                    {% if share.is_trend_high %}
+                        <td class="table-success">
+                    {% else %}
+                        <td class="table-danger">
                     {% endif %}
                     {{share.last_price}} {{ share.currency }}</td>
                     {% if user.is_authenticated %}
                         <td>
-                            <a href="{% url 'dashboard:update' share.id %}" class="btn btn-secondary">
+                            <a href="{% url 'dashboard:update' share.id %}" class="btn btn-secondary btn-sm">
                                 Редактировать
                             </a>
-                            <a href="{% url 'dashboard:delete' share.id %}" class="btn btn-danger">
+                            <a href="{% url 'dashboard:delete' share.id %}" class="btn btn-danger btn-sm">
                                 Удалить
+                            </a>
+                            <a href="{% url 'dashboard:trade' %}?share={{ share.id }}" class="btn btn-outline-success btn-sm">
+                                Купить
                             </a>
                         </td>
                     {% endif %}
 
                 </tr>
             {% endfor %}
-
-
 
             </tbody>
         </table>
@@ -65,7 +67,7 @@
             {% for page_number in page_obj.paginator.page_range %}
                 {% if page_obj.number == page_number %}
                     <button class="btn btn-outline-primary active">
-                        <span>{{ page_number }} <span class="sr-only">(current)</span></span>
+                        <span>{{ page_number }}</span>
                     </button>
                 {% else %}
                     <a href="?page={{ page_number }}" class="btn btn-outline-primary">

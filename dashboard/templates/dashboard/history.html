@@ -1,0 +1,58 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}
+<title>История цен {{ share.ticker }}</title>
+{% endblock %}
+
+{% block content %}
+    <h3>История цен: {{ share.name }} ({{ share.ticker }})</h3>
+    <p><a href="{% url 'dashboard:detail' share.id %}">К карточке акции</a></p>
+
+    <form method="get" class="row g-2 align-items-end mb-3">
+        <div class="col-auto">
+            {{ period_form.days.label_tag }}
+            {{ period_form.days }}
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" type="submit">Показать</button>
+        </div>
+    </form>
+
+    {% if stats.first is not None %}
+        <ul>
+            <li>Первая цена: {{ stats.first }}</li>
+            <li>Последняя цена: {{ stats.last }}</li>
+            <li>Абсолютное изменение: {{ stats.abs_change }}</li>
+            <li>Изменение, %: {{ stats.pct_change }}</li>
+            <li>Минимум: {{ stats.min_price }}</li>
+            <li>Максимум: {{ stats.max_price }}</li>
+        </ul>
+    {% else %}
+        <p>За выбранный период сохранённых цен нет.</p>
+    {% endif %}
+
+    {% if plot_div %}
+        {% autoescape off %}
+            {{ plot_div }}
+        {% endautoescape %}
+    {% endif %}
+
+    {% if stats.points %}
+        <table class="table table-sm table-striped mt-3">
+            <thead>
+            <tr>
+                <th>Время</th>
+                <th>Цена</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for point in stats.points reversed %}
+                <tr>
+                    <td>{{ point.recorded_at }}</td>
+                    <td>{{ point.price }} {{ share.currency }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

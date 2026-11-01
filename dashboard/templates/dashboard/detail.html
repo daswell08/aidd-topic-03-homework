@@ -6,27 +6,46 @@
 
 {% block content %}
     <div class="row">
-    <div class="col3"></div>
-    <div class="col3">
-        Инструмент: {{ share.name }} <br>
-        Текущая цена: {{ share.last_price }} {{ share.currency }} <br>
-        Время последнего обновления: {{ share.updated_at }}
-    </div>
-    <div class="col3"></div>
-    </div>
-
-
-      <div class="row mt-3">
-    <div class="col3"></div>
-    <div class="col3">
-    <h5>Исторические данные: </h5>
- {% autoescape off %}
-  {{ plot_div }}
-  {% endautoescape %}
-    </div>
-    <div class="col3"></div>
+        <div class="col-md-8">
+            <h3>{{ share.name }} ({{ share.ticker }})</h3>
+            <p>Текущая цена: {{ share.last_price }} {{ share.currency }}</p>
+            <p>Время последнего обновления: {{ share.updated_at }}</p>
+            <p>
+                <a href="{% url 'dashboard:history' share.id %}" class="btn btn-outline-primary btn-sm">История цен</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard:trade' %}?share={{ share.id }}" class="btn btn-outline-success btn-sm">Сделка</a>
+                {% endif %}
+            </p>
+        </div>
     </div>
 
+    <form method="get" class="row g-2 align-items-end mb-3">
+        <div class="col-auto">
+            {{ period_form.days.label_tag }}
+            {{ period_form.days }}
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" type="submit">Показать</button>
+        </div>
+    </form>
 
+    {% if stats.first is not None %}
+        <div class="mb-3">
+            <p>Изменение за период: {{ stats.abs_change }} ({{ stats.pct_change }}%)</p>
+            <p>Минимум: {{ stats.min_price }} / Максимум: {{ stats.max_price }}</p>
+        </div>
+    {% endif %}
 
+    <div class="row mt-3">
+        <div class="col">
+            <h5>Исторические данные:</h5>
+            {% if plot_div %}
+                {% autoescape off %}
+                    {{ plot_div }}
+                {% endautoescape %}
+            {% else %}
+                <p>Нет данных для графика. Запустите обновление цен или укажите TINKOFF_TOKEN.</p>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

@@ -10,27 +10,34 @@ class AuthView(View):
 
     @staticmethod
     def get(request):
-        return render(request, "user/auth.html", {"form": AuthForm})
+        return render(request, "user/auth.html", {"form": AuthForm()})
 
     @staticmethod
     def post(request):
         form = AuthForm(request.POST)
+        if not form.is_valid():
+            return render(
+                request,
+                "user/auth.html",
+                {"form": form, "error": "Проверьте введённые данные."},
+            )
+
+        email = form.cleaned_data["email"].strip().lower()
         user = authenticate(
-            request, username=form.data["email"].lower(), password=form.data["password"]
+            request, username=email, password=form.cleaned_data["password"]
         )
 
         if user is not None:
             login(request, user)
             return redirect("dashboard:index")
-        else:
-            return render(
-                request,
-                "user/auth.html",
-                {
-                    "form": form,
-                    "error": "Неверный логин или пароль! Повторите попытку.",
-                },
-            )
+        return render(
+            request,
+            "user/auth.html",
+            {
+                "form": form,
+                "error": "Неверный логин или пароль! Повторите попытку.",
+            },
+        )
 
 
 class RegistrationView(View):
@@ -38,21 +45,24 @@ class RegistrationView(View):
 
     @staticmethod
     def get(request):
-        return render(request, "user/registration.html", {"form": RegistrationForm})
+        return render(request, "user/registration.html", {"form": RegistrationForm()})
 
     @staticmethod
     def post(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            if user is not None:
+                login(request, user)
             return redirect("dashboard:index")
-        else:
-            return render(
-                request,
-                "user/registration.html",
-                {"form": form, "error": form.errors["__all__"].data[0].message},
-            )
+
+        non_field = form.non_field_errors()
+        error = non_field[0] if non_field else "Проверьте введённые данные."
+        return render(
+            request,
+            "user/registration.html",
+            {"form": form, "error": error},
+        )
 
 
 class LogoutView(View):
